@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VSCode
+.vscode/
+
+# PyInstaller
+*.manifest
+*.spec
+build/
+dist/
+*.build/
+*.dist/
+*.onefile-build/
+
+# Executables
+*.exe
+*.dll
+
+# Logs
+*.log
+
+# Database
+*.db
+
+# Settings
+bpsfishmacrosettings.json
