@@ -44,6 +44,10 @@ from pynput.mouse import Listener as MouseListener, Button, Controller as MouseC
 import pyautogui
 import pydirectinput
 
+# Disable fail-safe (prevent crash when mouse hits corner)
+# User has F1/F3 hotkeys to stop the macro safely
+pyautogui.FAILSAFE = False
+
 # V3: Setup logging
 LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)) if not getattr(sys, 'frozen', False) else os.path.dirname(sys.executable), 'fishing_macro.log')
 logging.basicConfig(
@@ -106,10 +110,10 @@ AUDIO_FILE = get_resource_path('you-got-a-devil-fruit-sound-gpo-made-with-Voicem
 # Only AREA configurations are set by default to match current user optimized settings
 DEFAULT_COORDS_1920x1080 = {
     'area_coords': {
-        'x': 1083,
-        'y': 183,
-        'width': 521,
-        'height': 715
+        'x': 1089,
+        'y': -4,
+        'width': 573,
+        'height': 1084
     },
     'auto_craft_area_coords': {
         'x': 1269,
@@ -676,15 +680,12 @@ class FishingMacroGUI:
             default_settings = {
                 'always_on_top': True,
                 'area_coords': {
-                    'x': 958,
-                    'y': 387,
-                    'width': 278,
-                    'height': 362
+                    'x': 1089,
+                    'y': -4,
+                    'width': 573,
+                    'height': 1084
                 },
-                'water_point': {
-                    'x': 964,
-                    'y': 1079
-                },
+                'water_point': None,
                 'item_hotkeys': {
                     'rod': '1',
                     'everything_else': '2',
@@ -705,28 +706,13 @@ class FishingMacroGUI:
                     'auto_buy_bait': True,
                     'auto_store_fruit': True,
                     'auto_select_top_bait': True,
-                    'yes_button': {
-                        'x': 786,
-                        'y': 980
-                    },
-                    'middle_button': {
-                        'x': 961,
-                        'y': 982
-                    },
-                    'no_button': {
-                        'x': 1128,
-                        'y': 974
-                    },
+                    'yes_button': None,
+                    'middle_button': None,
+                    'no_button': None,
                     'loops_per_purchase': 100,
-                    'fruit_point': {
-                        'x': 1024,
-                        'y': 861
-                    },
-                    'fruit_color': [7, 116, 45],
-                    'top_bait_point': {
-                        'x': 953,
-                        'y': 798
-                    }
+                    'fruit_point': None,
+                    'fruit_color': None,
+                    'top_bait_point': None
                 },
                 'webhook_settings': {
                     'webhook_url': '',
@@ -757,40 +743,19 @@ class FishingMacroGUI:
                 },
                 'auto_craft_settings': {
                     'auto_craft_enabled': False,
-                    'auto_craft_water_point': {
-                        'x': 1919,
-                        'y': 1079
-                    },
+                    'auto_craft_water_point': None,
                     'craft_every_n_fish': 1,
                     'craft_menu_delay': 0.1,
                     'craft_click_speed': 0.1,
                     'craft_legendary_quantity': 1,
                     'craft_rare_quantity': 1,
                     'craft_common_quantity': 1,
-                    'craft_button_coords': {
-                        'x': 1150,
-                        'y': 777
-                    },
-                    'plus_button_coords': {
-                        'x': 1114,
-                        'y': 380
-                    },
-                    'fish_icon_coords': {
-                        'x': 1407,
-                        'y': 298
-                    },
-                    'legendary_bait_coords': {
-                        'x': 793,
-                        'y': 632
-                    },
-                    'rare_bait_coords': {
-                        'x': 789,
-                        'y': 602
-                    },
-                    'common_bait_coords': {
-                        'x': 782,
-                        'y': 574
-                    }
+                    'craft_button_coords': None,
+                    'plus_button_coords': None,
+                    'fish_icon_coords': None,
+                    'legendary_bait_coords': None,
+                    'rare_bait_coords': None,
+                    'common_bait_coords': None
                 },
                 'auto_craft_area_coords': {
                     'x': 1269,
@@ -2648,6 +2613,7 @@ class FishingMacroGUI:
             self.fruits_caught = 0
             self.fish_caught = 0
             self.fish_at_last_fruit = 0
+            self.last_craft_fish_count = -1  # Prevent infinite crafting loop if cast fails
             
             # V3: Start stats session
             if stats_manager is None:
@@ -2781,7 +2747,7 @@ class FishingMacroGUI:
                     kb.release(self.rod_hotkey)
                     if not self.interruptible_sleep(self.rod_select_delay):
                         return
-                    if not self.disable_normal_camera:
+                    if not self.disable_normal_camera or self.auto_craft_enabled:
                         self.current_status = "Initializing camera"
                         print("\rInitial setup: Adjusting camera position (faster)...", end='', flush=True)
                         # Scroll in 30 ticks (first person guarantee) - FASTER
@@ -3895,13 +3861,16 @@ class FishingMacroGUI:
             # craft_every_n_fish = 0 means craft before every cast
             should_craft = True
         elif self.craft_every_n_fish > 0 and (self.fish_caught == 0 or self.fish_caught % self.craft_every_n_fish == 0):
-            # Craft on first run (fish_caught = 0) or after catching N fish
-            should_craft = True
+            # Craft on first run or after catching N fish
+            # Check if we already crafted for this fish count (prevents loop on failed cast)
+            if not hasattr(self, 'last_craft_fish_count') or self.fish_caught != self.last_craft_fish_count:
+                should_craft = True
         
         if should_craft:
             self.current_status = "Auto Crafting"
             print(f"\r⚒️ Auto Craft: Running craft cycle (fish caught: {self.fish_caught})...", end='', flush=True)
             self.run_auto_craft()
+            self.last_craft_fish_count = self.fish_caught  # Mark this count as crafted
             # Don't reset fish_caught - let it accumulate
             if not self.interruptible_sleep(0.3):  # Reduced from 1.0
                 return False
