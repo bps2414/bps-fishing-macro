@@ -1,0 +1,63 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# PyInstaller
+build/
+dist/
+*.spec.bak
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs e Debug
+*.log
+debug_*.txt
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*-BACKUP-*/
+*.backup_*
+
+# Settings pessoais (não compartilhar)
+bpsfishmacrosettings.json
+fishing_stats.db
+token.txt
+
+# Build artifacts
+icon.ico
+bps_fishing_macroV5.spec
+
+# Testes de desenvolvimento
+test_*.py
+!tests/test_*.py
+
+# UPX
+upx-*/
+
+# Release binaries (upload separadamente via GitHub Releases)
+release/*.exe
+release/*.zip

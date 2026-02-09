@@ -1,0 +1,16 @@
+# Icon Placeholder
+# V5.2 Phase 1
+
+This is a placeholder for the actual icon.ico file.
+
+Phase 2 will replace this with a real multi-resolution .ico file:
+- 16x16
+- 32x32
+- 48x48
+- 256x256
+
+Tool to create .ico: https://icoconvert.com/ or GIMP
+
+Design: Fishing-related icon (fishing rod, fish, hook)
+Background: Transparent
+Format: Windows .ico
