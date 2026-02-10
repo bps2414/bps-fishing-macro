@@ -1,8 +1,8 @@
 """
-Discord Bot Service (V5.3)
+Discord Bot Service (v1.0.3)
 
 Real Discord bot integration for remote control of the fishing macro.
-Accepts commands (!start, !stop, !status, !screenshot) from authorized users
+Accepts commands (!start, !stop, !status, !screenshot, !shutdown) from authorized users
 and enqueues them for safe GUI thread processing.
 
 Security features:
@@ -287,6 +287,9 @@ class DiscordBotService:
   !debug on        ✅  Enable DEBUG logging
   !debug off       ❌  Disable DEBUG logging
 
+⚠️ SYSTEM:
+  !shutdown    🔌  Shutdown the computer remotely
+
 ❓ SUPPORT:
   !help        📖  Show this menu
 
@@ -419,6 +422,23 @@ class DiscordBotService:
                 self.command_queue.put(
                     {
                         "command": "eta",
+                        "channel_id": ctx.channel.id,
+                        "author_id": ctx.author.id,
+                        "author_name": str(ctx.author),
+                    }
+                )
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
+
+            @self.bot.command(name="shutdown", help="🔌 Shutdown the computer remotely")
+            async def cmd_shutdown(ctx):
+                if not await self._is_authorized(ctx):
+                    return
+                self.command_queue.put(
+                    {
+                        "command": "shutdown",
                         "channel_id": ctx.channel.id,
                         "author_id": ctx.author.id,
                         "author_name": str(ctx.author),

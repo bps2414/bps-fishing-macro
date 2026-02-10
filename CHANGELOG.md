@@ -3,6 +3,17 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.3] - 2026-02-10
+
+### Added
+- **`!shutdown` Command:** Remotely shut down the computer via Discord bot
+  - Whitelist-protected (only authorized user IDs can execute)
+  - Stops the macro before initiating shutdown
+  - 10-second grace period before Windows shutdown
+  - Confirmation message sent to Discord channel
+
+---
+
 ## [5.3] - 2026-02-09
 
 ### Added

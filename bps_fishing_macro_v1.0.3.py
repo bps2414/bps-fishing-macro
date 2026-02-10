@@ -1,5 +1,5 @@
 ﻿# Copyright (C) 2026 BPS
-# This file is part of BPS Fishing Macro.
+# This file is part of BPS Fishing Macro v1.0.3.
 #
 # Smart Bait System: Developed by Murtaza
 # - OCR-based bait counting and selection
@@ -731,7 +731,7 @@ class FishingMacroGUI:
         self._process_bot_commands()
 
         # Print screen resolution info
-        logger.info(f"=== BPS Fishing Macro V3 ===")
+        logger.info(f"=== BPS Fishing Macro v1.0.3 ===")
         logger.info(f"Screen Resolution: {SCREEN_WIDTH}x{SCREEN_HEIGHT}")
         logger.info(f"Reference Resolution: {REF_WIDTH}x{REF_HEIGHT}")
         if SCREEN_WIDTH != REF_WIDTH or SCREEN_HEIGHT != REF_HEIGHT:
@@ -952,6 +952,26 @@ class FishingMacroGUI:
 
             elif command == "eta":
                 self._handle_eta_command(channel_id)
+
+            elif command == "shutdown":
+                self._send_bot_response(
+                    channel_id,
+                    f"🔌 **Computer shutdown initiated by {author_name}!**\n⏱️ Shutting down in 10 seconds...",
+                    delete_after=None,  # Don't auto-delete this important message
+                )
+                logger.warning(f"[BOT] SHUTDOWN command received from {author_name}")
+                # Stop the macro first if running
+                if self.running:
+                    self._actually_stop_macro()
+                # Schedule shutdown after a short delay so Discord message can be sent
+                import subprocess
+                def _do_shutdown():
+                    try:
+                        subprocess.Popen(["shutdown", "/s", "/t", "10"], shell=True)
+                    except Exception as e:
+                        logger.error(f"[BOT] Shutdown failed: {e}")
+                        self._send_bot_response(channel_id, f"❌ **Shutdown failed:** {e}")
+                self.root.after(2000, _do_shutdown)
 
             else:
                 logger.warning(f"[BOT] Unknown command: {command}")

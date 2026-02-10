@@ -61,3 +61,4 @@ upx-*/
 # Release binaries (upload separadamente via GitHub Releases)
 release/*.exe
 release/*.zip
+release/Output/
