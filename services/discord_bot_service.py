@@ -103,14 +103,18 @@ class DiscordBotService:
                 import asyncio
 
                 loop = self.bot.loop
-                if loop and loop.is_running():
-                    asyncio.run_coroutine_threadsafe(self.bot.close(), loop)
-            except Exception:
-                pass
+                if loop and not loop.is_closed():
+                    if loop.is_running():
+                         asyncio.run_coroutine_threadsafe(self.bot.close(), loop)
+                    else:
+                        # Loop exists but not running, just close it?
+                        pass
+            except Exception as e:
+                print(f"[BOT] Warning during shutdown: {e}")
 
         # Wait for thread to finish (short timeout to avoid hanging)
         if self._bot_thread and self._bot_thread.is_alive():
-            self._bot_thread.join(timeout=2.0)
+            self._bot_thread.join(timeout=1.0)
 
         # Use print instead of logger to avoid deadlock
         print("[BOT] Stopped")

@@ -1272,10 +1272,13 @@ class FishingMacroGUI:
         try:
             # Capture screenshot first
             screenshot_file = None
+            print("[MENU] Attempting to capture screenshot for menu...")
             hwnd = self.window.find_window()
             if hwnd:
+                print(f"[MENU] Window found: {hwnd}")
                 screenshot = self.screen.capture_window(hwnd)
                 if screenshot is not None:
+                    print("[MENU] Screenshot captured successfully!")
                     import cv2
 
                     temp_dir = Path(tempfile.gettempdir())
@@ -1284,6 +1287,30 @@ class FishingMacroGUI:
                     )
                     cv2.imwrite(str(screenshot_path), screenshot)
                     screenshot_file = str(screenshot_path)
+                else:
+                    print("[MENU] Failed to capture window pixels (returned None)")
+            else:
+                print("[MENU] Game window NOT found!")
+
+            # Fallback: Capture entire screen if specific window failed
+            if not screenshot_file:
+                 print("[MENU] Attempting fullscreen fallback...")
+                 try:
+                     import mss.tools
+                     with mss.mss() as sct:
+                         # Capture primary monitor
+                         monitor = sct.monitors[1]
+                         sct_img = sct.grab(monitor)
+                         
+                         temp_dir = Path(tempfile.gettempdir())
+                         screenshot_path = temp_dir / f"menu_fallback_{int(time.time())}.png"
+                         
+                         # Convert to standard format
+                         mss.tools.to_png(sct_img.rgb, sct_img.size, output=str(screenshot_path))
+                         screenshot_file = str(screenshot_path)
+                         print(f"[MENU] Fallback successful: {screenshot_file}")
+                 except Exception as e:
+                     print(f"[MENU] Screenshot fallback error: {e}")
 
             # Create embed with live stats
             runtime = self.get_runtime()
@@ -1515,10 +1542,13 @@ class FishingMacroGUI:
                     try:
                         # Capture fresh screenshot
                         screenshot_file = None
+                        print("[MENU-REFRESH] Attempting to capture screenshot...")
                         hwnd = self.app.window.find_window()
                         if hwnd:
+                            print(f"[MENU-REFRESH] Window found: {hwnd}")
                             screenshot = self.app.screen.capture_window(hwnd)
                             if screenshot is not None:
+                                print("[MENU-REFRESH] Screenshot captured successfully!")
                                 import cv2
 
                                 temp_dir = Path(tempfile.gettempdir())
@@ -1527,6 +1557,29 @@ class FishingMacroGUI:
                                 )
                                 cv2.imwrite(str(screenshot_path), screenshot)
                                 screenshot_file = str(screenshot_path)
+                            else:
+                                print("[MENU-REFRESH] Failed to capture pixels (None)")
+                        else:
+                            print("[MENU-REFRESH] Game window NOT found!")
+
+                        # Fallback
+                        if not screenshot_file:
+                             print("[MENU-REFRESH] Attempting fullscreen fallback...")
+                             try:
+                                 import mss.tools
+                                 with mss.mss() as sct:
+                                     # Capture primary monitor
+                                     monitor = sct.monitors[1]
+                                     sct_img = sct.grab(monitor)
+                                     
+                                     temp_dir = Path(tempfile.gettempdir())
+                                     screenshot_path = temp_dir / f"menu_fallback_{int(time.time())}.png"
+                                     
+                                     mss.tools.to_png(sct_img.rgb, sct_img.size, output=str(screenshot_path))
+                                     screenshot_file = str(screenshot_path)
+                                     print(f"[MENU-REFRESH] Fallback successful: {screenshot_file}")
+                             except Exception as e:
+                                 print(f"[MENU-REFRESH] Fallback error: {e}")
 
                         # Get fresh stats
                         runtime = self.app.get_runtime()
