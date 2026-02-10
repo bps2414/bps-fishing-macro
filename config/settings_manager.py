@@ -470,7 +470,7 @@ class SettingsManager:
             self._save_all()
 
     def load_discord_rpc_settings(self):
-        """V5.2: Load Discord Rich Presence settings from settings file"""
+        """V5.3: Load Discord Rich Presence settings from settings file"""
         default_rpc = {
             "enabled": False,
         }
@@ -478,7 +478,7 @@ class SettingsManager:
             return self._data.get("discord_rpc_settings", default_rpc)
 
     def save_discord_rpc_settings(self, enabled):
-        """V5.2: Save Discord Rich Presence settings to settings file"""
+        """V5.3: Save Discord Rich Presence settings to settings file"""
         with self._lock:
             self._data["discord_rpc_settings"] = {
                 "enabled": enabled,
@@ -487,7 +487,7 @@ class SettingsManager:
         logger.info("Discord RPC settings saved successfully")
 
     def load_discord_bot_settings(self):
-        """V5.2: Load Discord Bot settings from settings file"""
+        """V5.3: Load Discord Bot settings from settings file"""
         default_bot = {
             "enabled": False,
             "application_id": "",  # Discord Application ID
@@ -508,7 +508,7 @@ class SettingsManager:
         guild_id="",
         auto_menu_channel_id="",
     ):
-        """V5.2: Save Discord Bot settings to settings file"""
+        """V5.3: Save Discord Bot settings to settings file"""
         with self._lock:
             self._data["discord_bot_settings"] = {
                 "enabled": enabled,

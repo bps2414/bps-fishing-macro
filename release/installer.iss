@@ -1,11 +1,11 @@
-; BPS Fishing Macro V5.2 - Inno Setup Installer Script
+; BPS Fishing Macro V5.3 - Inno Setup Installer Script
 ; Date: 02/09/2026
 ; Distribution for clean PCs (without Python installed)
 
 [Setup]
 ; Application identification
 AppName=BPS Fishing Macro
-AppVersion=5.2
+AppVersion=5.3
 AppPublisher=BPS
 AppPublisherURL=https://github.com/BPS
 AppSupportURL=https://github.com/BPS
@@ -16,7 +16,7 @@ DefaultDirName={autopf}\BPS Fishing Macro
 DefaultGroupName=BPS Fishing Macro
 AllowNoIcons=yes
 OutputDir=.
-OutputBaseFilename=BPSFishingMacro-Setup-v5.2
+OutputBaseFilename=BPSFishingMacro-Setup-v5.3
 ; SetupIconFile=icon.ico
 Compression=lzma2/max
 SolidCompression=yes
@@ -46,7 +46,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 ; ===== MAIN EXECUTABLE =====
-Source: "bps_fishing_macroV5.2.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bps_fishing_macroV5.3.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Settings JSON is NOT included - users will configure their own webhooks/settings
 ; The application will create bpsfishmacrosettings.json with defaults on first run
@@ -63,18 +63,18 @@ Source: "tesseract-portable\tessdata\*"; DestDir: "{app}\tesseract\tessdata"; Fl
 
 [Icons]
 ; Start Menu
-Name: "{group}\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.2.exe"; WorkingDir: "{app}"
+Name: "{group}\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.3.exe"; WorkingDir: "{app}"
 Name: "{group}\{cm:UninstallProgram,BPS Fishing Macro}"; Filename: "{uninstallexe}"
 
 ; Desktop Shortcut (optional)
-Name: "{autodesktop}\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.2.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autodesktop}\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.3.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 ; Quick Launch (optional)
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.2.exe"; WorkingDir: "{app}"; Tasks: quicklaunchicon
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\BPS Fishing Macro"; Filename: "{app}\bps_fishing_macroV5.3.exe"; WorkingDir: "{app}"; Tasks: quicklaunchicon
 
 [Run]
 ; Run after installation (optional)
-Filename: "{app}\bps_fishing_macroV5.2.exe"; Description: "{cm:LaunchProgram,BPS Fishing Macro}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\bps_fishing_macroV5.3.exe"; Description: "{cm:LaunchProgram,BPS Fishing Macro}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; Clean up residual files on uninstall
@@ -97,7 +97,7 @@ procedure InitializeWizard;
 begin
   // Custom welcome message
   WizardForm.WelcomeLabel2.Caption := 
-    'This wizard will install BPS Fishing Macro v5.2 on your computer.' + #13#10 + #13#10 +
+    'This wizard will install BPS Fishing Macro v5.3 on your computer.' + #13#10 + #13#10 +
     'The installer includes:' + #13#10 +
     '  * Macro executable (95 MB)' + #13#10 +
     '  * Tesseract OCR portable (~50 MB)' + #13#10 +

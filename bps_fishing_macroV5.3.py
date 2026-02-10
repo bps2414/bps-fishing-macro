@@ -221,7 +221,7 @@ class FishingMacroGUI:
             except:
                 pass
 
-        # CustomTkinter colors - V5.2 Darker Theme (reduced eye strain)
+        # CustomTkinter colors - V5.3 Darker Theme (reduced eye strain)
         self.bg_color = "#0d0d0d"  # Main background (darker)
         self.fg_color = "#f5f5f5"  # Text color (soft white, unchanged)
         self.accent_color = "#2d2d2d"  # Neutral accent (darker)
@@ -264,7 +264,7 @@ class FishingMacroGUI:
         # Load settings
         self.always_on_top = self.settings.load_always_on_top()
 
-        # V5.2: Pre-load Discord settings for GUI
+        # V5.3: Pre-load Discord settings for GUI
         discord_rpc_settings = self.settings.load_discord_rpc_settings()
         self.discord_rpc_enabled = discord_rpc_settings.get("enabled", False)
 
@@ -446,6 +446,14 @@ class FishingMacroGUI:
         self.cycle_times = []  # List of recent cycle times (keep last 20)
         self.cycle_start_time = None  # Start time of current cycle
         self.average_cycle_time = 0.0  # Average cycle time in seconds
+        self.total_casts = 0  # Total casts counter (not capped like cycle_times)
+
+        # Discord menu auto-refresh tracking
+        self._discord_menu_message = None  # Reference to the active menu message
+        self._discord_menu_channel_id = None  # Channel where menu was sent
+        self._discord_menu_view = None  # The View instance (buttons)
+        self._discord_menu_last_refresh = 0  # Timestamp of last auto-refresh
+        self._discord_menu_refresh_cooldown = 15  # Min seconds between auto-refreshes
 
         # V3: Sound notification settings - load from file
         sound_settings = self.settings.load_sound_settings()
@@ -560,7 +568,7 @@ class FishingMacroGUI:
         self._bait_manager_vision = bait_vision
         self._bait_manager_settings = bait_settings
 
-        # Phase 5.2: FruitHandler - Fruit detection and webhook notifications
+        # Phase 5.3: FruitHandler - Fruit detection and webhook notifications
         fruit_vision = SimpleNamespace(
             screen=self.screen, ocr=self.ocr, color_detector=self.color_detector
         )
@@ -646,7 +654,7 @@ class FishingMacroGUI:
             ocr_checker=self.check_legendary_pity_ocr,
         )
 
-        # V5.2: Discord Rich Presence Service
+        # V5.3: Discord Rich Presence Service
         discord_rpc_settings = self.settings.load_discord_rpc_settings()
         self.discord_rpc_enabled = discord_rpc_settings.get("enabled", False)
         self.rpc_service = None  # Initialized only if enabled
@@ -667,7 +675,7 @@ class FishingMacroGUI:
         else:
             logger.debug("Discord Rich Presence disabled in settings")
 
-        # V5.2: Discord Bot Service (Remote Control)
+        # V5.3: Discord Bot Service (Remote Control)
         from utils.token_encryption import decrypt_token
 
         discord_bot_settings = self.settings.load_discord_bot_settings()
@@ -692,6 +700,8 @@ class FishingMacroGUI:
                     command_queue=self.bot_command_queue,
                     logger=logger,
                     command_prefix="!",
+                    auto_menu_channel_id=self.discord_bot_auto_menu_channel,
+                    app_reference=self,
                 )
                 # Auto-start bot if enabled in settings
                 self.bot_service.start()
@@ -737,7 +747,7 @@ class FishingMacroGUI:
         if self.always_on_top:
             self.root.attributes("-topmost", True)
 
-        # V5.2: GUI Thread Watchdog — detects freezes and dumps thread stacks
+        # V5.3: GUI Thread Watchdog — detects freezes and dumps thread stacks
         self.watchdog = GUIWatchdog(self.root, freeze_threshold=3.0, check_interval=2.0)
         self.watchdog.start()
         logger.info("[INIT] GUI Watchdog armed (3s threshold)")
@@ -761,7 +771,7 @@ class FishingMacroGUI:
             self.current_status = status
 
     def _increment_fish_caught_with_rpc(self):
-        """Increment fish count and update Discord RPC (V5.2)"""
+        """Increment fish count and update Discord RPC (V5.3)"""
         self.fish_caught += 1
         self._update_rpc_stats()
 
@@ -779,9 +789,11 @@ class FishingMacroGUI:
 
             # Calculate hourly rate
             if self.start_time:
-                elapsed_hours = (
-                    time.time() - self.start_time - self.total_paused_time
-                ) / 3600
+                _es = time.time() - self.start_time - self.total_paused_time
+                if self.paused and self.pause_start_time:
+                    _es -= (time.time() - self.pause_start_time)
+                _es = max(0, _es)
+                elapsed_hours = _es / 3600
                 hourly_rate = (
                     int(total_catches / elapsed_hours) if elapsed_hours > 0 else 0
                 )
@@ -818,10 +830,13 @@ class FishingMacroGUI:
         current_time = time.time()
         elapsed = current_time - self.start_time - self.total_paused_time
 
-        # If currently paused, don't include current pause duration yet
+        # If currently paused, subtract the ongoing pause duration too
+        # (total_paused_time only gets updated on unpause, so we need this)
         if self.paused and self.pause_start_time:
-            # Already excluded via total_paused_time being updated in toggle_pause
-            pass
+            elapsed -= (current_time - self.pause_start_time)
+
+        # Safety: never go negative
+        elapsed = max(0, elapsed)
 
         hours = int(elapsed // 3600)
         minutes = int((elapsed % 3600) // 60)
@@ -915,16 +930,18 @@ class FishingMacroGUI:
                 )
                 if self.running:
                     self._actually_stop_macro()
-                    time.sleep(2)  # Wait for clean shutdown
-                self._actually_start_macro()
-                if self.running:
-                    self._send_bot_response(
-                        channel_id, "✅ **Macro restarted successfully!**"
-                    )
-                else:
-                    self._send_bot_response(
-                        channel_id, "❌ **Restart failed - check logs**"
-                    )
+                # Use root.after instead of time.sleep to avoid blocking GUI thread
+                def _finish_restart(ch_id=channel_id):
+                    self._actually_start_macro()
+                    if self.running:
+                        self._send_bot_response(
+                            ch_id, "✅ **Macro restarted successfully!**"
+                        )
+                    else:
+                        self._send_bot_response(
+                            ch_id, "❌ **Restart failed - check logs**"
+                        )
+                self.root.after(2000, _finish_restart)
 
             elif command == "debug":
                 action = cmd_data.get("action", "help")
@@ -932,6 +949,9 @@ class FishingMacroGUI:
 
             elif command == "menu":
                 self._send_interactive_menu(channel_id)
+
+            elif command == "eta":
+                self._handle_eta_command(channel_id)
 
             else:
                 logger.warning(f"[BOT] Unknown command: {command}")
@@ -949,9 +969,11 @@ class FishingMacroGUI:
         # Calculate hourly rate
         total_catches = self.fish_caught + self.fruits_caught
         if self.start_time:
-            elapsed_hours = (
-                time.time() - self.start_time - self.total_paused_time
-            ) / 3600
+            elapsed_seconds = time.time() - self.start_time - self.total_paused_time
+            if self.paused and self.pause_start_time:
+                elapsed_seconds -= (time.time() - self.pause_start_time)
+            elapsed_seconds = max(0, elapsed_seconds)
+            elapsed_hours = elapsed_seconds / 3600
             hourly_rate = int(total_catches / elapsed_hours) if elapsed_hours > 0 else 0
         else:
             hourly_rate = 0
@@ -991,9 +1013,11 @@ class FishingMacroGUI:
         # Current session stats
         total_catches = self.fish_caught + self.fruits_caught
         if self.start_time:
-            elapsed_hours = (
-                time.time() - self.start_time - self.total_paused_time
-            ) / 3600
+            elapsed_seconds = time.time() - self.start_time - self.total_paused_time
+            if self.paused and self.pause_start_time:
+                elapsed_seconds -= (time.time() - self.pause_start_time)
+            elapsed_seconds = max(0, elapsed_seconds)
+            elapsed_hours = elapsed_seconds / 3600
             fish_rate = (
                 int(self.fish_caught / elapsed_hours) if elapsed_hours > 0 else 0
             )
@@ -1045,7 +1069,7 @@ class FishingMacroGUI:
 
 **Performance:**
 ⚡ Avg cycle: {self.average_cycle_time:.1f}s
-🎣 Total casts: {len(self.cycle_times) if hasattr(self, 'cycle_times') else 0}
+🎣 Total casts: {self.total_casts if hasattr(self, 'total_casts') else 0}
 """
         return stats_msg
 
@@ -1084,25 +1108,25 @@ class FishingMacroGUI:
                 if loop:
                     asyncio.run_coroutine_threadsafe(
                         self.bot_service.send_file(
-                            channel_id, str(screenshot_path), "📸 **Game Screenshot**"
+                            channel_id, str(screenshot_path), "📸 **Game Screenshot**", delete_after=60.0
                         ),
                         loop,
                     )
-                    logger.info(f"[BOT] Screenshot sent to channel {channel_id}")
+                    logger.info(f"[BOT] Screenshot sent to channel {channel_id} (auto-delete in 60s)")
 
         except Exception as e:
             logger.error(f"[BOT] Screenshot error: {e}")
             self._send_bot_response(channel_id, f"❌ **Screenshot failed:** {e}")
 
-    def _send_bot_response(self, channel_id: int, message: str):
-        """Send response message to Discord channel"""
+    def _send_bot_response(self, channel_id: int, message: str, delete_after: float = 10.0):
+        """Send response message to Discord channel (auto-deletes after delay)"""
         if self.bot_service and self.bot_service.is_running():
             try:
                 # Schedule async send in bot's event loop
                 loop = self.bot_service.bot.loop
                 if loop:
                     asyncio.run_coroutine_threadsafe(
-                        self.bot_service.send_message(channel_id, message), loop
+                        self.bot_service.send_message(channel_id, message, delete_after=delete_after), loop
                     )
             except Exception as e:
                 logger.error(f"[BOT] Failed to send response: {e}")
@@ -1167,6 +1191,70 @@ class FishingMacroGUI:
         except Exception as e:
             logger.error(f"[BOT] Debug command error: {e}")
             self._send_bot_response(channel_id, f"❌ **Debug error:** {e}")
+    def _handle_eta_command(self, channel_id: int):
+        """Calculate and send ETA to next fruit"""
+        try:
+            if not self.running:
+                self._send_bot_response(channel_id, "⚠️ **Macro is not running**")
+                return
+
+            # Calculate elapsed time
+            if not self.start_time:
+                self._send_bot_response(channel_id, "⚠️ **No session data yet**")
+                return
+
+            _es = time.time() - self.start_time - self.total_paused_time
+            if self.paused and self.pause_start_time:
+                _es -= (time.time() - self.pause_start_time)
+            _es = max(0, _es)
+            elapsed_hours = _es / 3600
+
+            # Fish rate per hour
+            fish_rate = int(self.fish_caught / elapsed_hours) if elapsed_hours > 0 else 0
+
+            if fish_rate == 0:
+                self._send_bot_response(channel_id, "⚠️ **Not enough data — catch some fish first!**")
+                return
+
+            # Calculate average fish between fruits
+            if self.fruits_caught > 0:
+                avg_fish_per_fruit = self.fish_caught / self.fruits_caught
+            else:
+                # Default estimate: ~100 fish per fruit (common game average)
+                avg_fish_per_fruit = 100
+
+            # Fish caught since last fruit
+            fish_since_fruit = getattr(self, 'fish_at_last_fruit', 0)
+            fish_since_last = self.fish_caught - fish_since_fruit
+
+            # Remaining fish until next fruit (estimated)
+            remaining_fish = max(0, avg_fish_per_fruit - fish_since_last)
+
+            # ETA in minutes
+            eta_hours = remaining_fish / fish_rate
+            eta_minutes = int(eta_hours * 60)
+
+            if eta_minutes < 1:
+                eta_str = "< 1 min"
+            elif eta_minutes < 60:
+                eta_str = f"{eta_minutes} min"
+            else:
+                h = eta_minutes // 60
+                m = eta_minutes % 60
+                eta_str = f"{h}h {m}min"
+
+            msg = f"""**🍇 Fruit ETA**
+
+🐟 Fish since last fruit: **{fish_since_last}** / ~{int(avg_fish_per_fruit)}
+⚡ Current fish rate: **{fish_rate}/hr**
+⏱️ Estimated time: **{eta_str}**
+📊 Fruits caught: **{self.fruits_caught}** (avg {int(avg_fish_per_fruit)} fish/fruit)"""
+
+            self._send_bot_response(channel_id, msg, delete_after=30.0)
+
+        except Exception as e:
+            logger.error(f"[BOT] ETA command error: {e}")
+            self._send_bot_response(channel_id, f"❌ **ETA error:** {e}")
 
     async def _send_discord_menu(self, channel_id: int):
         """
@@ -1208,9 +1296,11 @@ class FishingMacroGUI:
             # Calculate stats
             total_catches = self.fish_caught + self.fruits_caught
             if self.start_time:
-                elapsed_hours = (
-                    time.time() - self.start_time - self.total_paused_time
-                ) / 3600
+                _es = time.time() - self.start_time - self.total_paused_time
+                if self.paused and self.pause_start_time:
+                    _es -= (time.time() - self.pause_start_time)
+                _es = max(0, _es)
+                elapsed_hours = _es / 3600
                 hourly_rate = (
                     int(total_catches / elapsed_hours) if elapsed_hours > 0 else 0
                 )
@@ -1241,6 +1331,16 @@ class FishingMacroGUI:
                 value=str(self.engine._state) if hasattr(self, "engine") else "N/A",
                 inline=True,
             )
+            embed.add_field(
+                name="🎣 Casts",
+                value=str(self.total_casts if hasattr(self, 'total_casts') else 0),
+                inline=True,
+            )
+            embed.add_field(
+                name="⏱️ Avg Cycle",
+                value=f"{self.average_cycle_time:.1f}s" if self.average_cycle_time > 0 else "N/A",
+                inline=True,
+            )
 
             # Set screenshot as image if captured
             if screenshot_file:
@@ -1253,7 +1353,7 @@ class FishingMacroGUI:
             # Create view with buttons
             class MacroMenuView(discord.ui.View):
                 def __init__(self, app):
-                    super().__init__(timeout=300)  # 5 min timeout
+                    super().__init__(timeout=None)  # Persistent view (no timeout)
                     self.app = app
 
                 @discord.ui.button(
@@ -1438,11 +1538,11 @@ class FishingMacroGUI:
 
                         total_catches = self.app.fish_caught + self.app.fruits_caught
                         if self.app.start_time:
-                            elapsed_hours = (
-                                time.time()
-                                - self.app.start_time
-                                - self.app.total_paused_time
-                            ) / 3600
+                            _es = time.time() - self.app.start_time - self.app.total_paused_time
+                            if self.app.paused and self.app.pause_start_time:
+                                _es -= (time.time() - self.app.pause_start_time)
+                            _es = max(0, _es)
+                            elapsed_hours = _es / 3600
                             hourly_rate = (
                                 int(total_catches / elapsed_hours)
                                 if elapsed_hours > 0
@@ -1488,6 +1588,16 @@ class FishingMacroGUI:
                             ),
                             inline=True,
                         )
+                        new_embed.add_field(
+                            name="🎣 Casts",
+                            value=str(self.app.total_casts if hasattr(self.app, 'total_casts') else 0),
+                            inline=True,
+                        )
+                        new_embed.add_field(
+                            name="⏱️ Avg Cycle",
+                            value=f"{self.app.average_cycle_time:.1f}s" if self.app.average_cycle_time > 0 else "N/A",
+                            inline=True,
+                        )
 
                         if screenshot_file:
                             new_embed.set_image(url="attachment://screenshot.png")
@@ -1522,11 +1632,25 @@ class FishingMacroGUI:
             channel = self.bot_service.bot.get_channel(channel_id)
             
             if channel:
+                # Purge old bot messages before sending new menu
+                try:
+                    def is_bot_msg(msg):
+                        return msg.author == self.bot_service.bot.user
+                    await channel.purge(limit=50, check=is_bot_msg)
+                except Exception as e:
+                    print(f"[BOT] Purge error: {e}")
+
                 if screenshot_file:
                     file_obj = discord.File(screenshot_file, filename="screenshot.png")
-                    await channel.send(embed=embed, file=file_obj, view=view)
+                    sent_msg = await channel.send(embed=embed, file=file_obj, view=view)
                 else:
-                    await channel.send(embed=embed, view=view)
+                    sent_msg = await channel.send(embed=embed, view=view)
+                
+                # Store references for auto-refresh
+                self._discord_menu_message = sent_msg
+                self._discord_menu_channel_id = channel_id
+                self._discord_menu_view = view
+                self._discord_menu_last_refresh = time.time()
                 print(f"[BOT] Menu sent successfully to channel {channel_id}")
             else:
                 print(f"[BOT] ERROR: Channel {channel_id} not found")
@@ -1589,9 +1713,11 @@ class FishingMacroGUI:
             # Calculate stats
             total_catches = self.fish_caught + self.fruits_caught
             if self.start_time:
-                elapsed_hours = (
-                    time.time() - self.start_time - self.total_paused_time
-                ) / 3600
+                _es = time.time() - self.start_time - self.total_paused_time
+                if self.paused and self.pause_start_time:
+                    _es -= (time.time() - self.pause_start_time)
+                _es = max(0, _es)
+                elapsed_hours = _es / 3600
                 hourly_rate = (
                     int(total_catches / elapsed_hours) if elapsed_hours > 0 else 0
                 )
@@ -1622,6 +1748,16 @@ class FishingMacroGUI:
                 value=str(self.engine._state) if hasattr(self, "engine") else "N/A",
                 inline=True,
             )
+            embed.add_field(
+                name="🎣 Casts",
+                value=str(self.total_casts if hasattr(self, 'total_casts') else 0),
+                inline=True,
+            )
+            embed.add_field(
+                name="⏱️ Avg Cycle",
+                value=f"{self.average_cycle_time:.1f}s" if self.average_cycle_time > 0 else "N/A",
+                inline=True,
+            )
 
             # Set screenshot as image if captured
             if screenshot_file:
@@ -1634,7 +1770,7 @@ class FishingMacroGUI:
             # Create view with buttons
             class MacroMenuView(discord.ui.View):
                 def __init__(self, app):
-                    super().__init__(timeout=300)  # 5 min timeout
+                    super().__init__(timeout=None)  # Persistent view (no timeout)
                     self.app = app
 
                 @discord.ui.button(
@@ -1819,11 +1955,11 @@ class FishingMacroGUI:
 
                         total_catches = self.app.fish_caught + self.app.fruits_caught
                         if self.app.start_time:
-                            elapsed_hours = (
-                                time.time()
-                                - self.app.start_time
-                                - self.app.total_paused_time
-                            ) / 3600
+                            _es = time.time() - self.app.start_time - self.app.total_paused_time
+                            if self.app.paused and self.app.pause_start_time:
+                                _es -= (time.time() - self.app.pause_start_time)
+                            _es = max(0, _es)
+                            elapsed_hours = _es / 3600
                             hourly_rate = (
                                 int(total_catches / elapsed_hours)
                                 if elapsed_hours > 0
@@ -1867,6 +2003,16 @@ class FishingMacroGUI:
                                 if hasattr(self.app, "engine")
                                 else "N/A"
                             ),
+                            inline=True,
+                        )
+                        new_embed.add_field(
+                            name="🎣 Casts",
+                            value=str(self.app.total_casts if hasattr(self.app, 'total_casts') else 0),
+                            inline=True,
+                        )
+                        new_embed.add_field(
+                            name="⏱️ Avg Cycle",
+                            value=f"{self.app.average_cycle_time:.1f}s" if self.app.average_cycle_time > 0 else "N/A",
                             inline=True,
                         )
 
@@ -2015,8 +2161,12 @@ class FishingMacroGUI:
                 else ""
             )
 
+            # Read guild_id and auto_menu_channel_id from UI NOW on GUI thread
+            guild_id = self.bot_guild_id_entry.get().strip() if hasattr(self, 'bot_guild_id_entry') else ""
+            auto_menu_channel_id = self.bot_auto_menu_channel_entry.get().strip() if hasattr(self, 'bot_auto_menu_channel_entry') else ""
+
             # Stop bot in background thread to avoid GUI freeze
-            def stop_bot_async(app_id=app_id, token=token, users_text=users_text):
+            def stop_bot_async(app_id=app_id, token=token, users_text=users_text, guild_id=guild_id, auto_menu_channel_id=auto_menu_channel_id):
                 try:
                     if self.bot_service and self.bot_service.is_running():
                         logger.info("[BOT] Stopping bot service...")
@@ -2036,12 +2186,8 @@ class FishingMacroGUI:
                     from utils.token_encryption import encrypt_token
 
                     encrypted_token = encrypt_token(token) if token else ""
-                    
-                    # Read guild_id and auto_menu_channel_id from UI (if available)
-                    guild_id = self.bot_guild_id_entry.get().strip() if hasattr(self, 'bot_guild_id_entry') else ""
-                    auto_menu_channel_id = self.bot_auto_menu_channel_entry.get().strip() if hasattr(self, 'bot_auto_menu_channel_entry') else ""
 
-                    # Save with enabled=False
+                    # Save with enabled=False (guild_id and auto_menu_channel_id pre-read from GUI thread)
                     self.settings.save_discord_bot_settings(
                         False, app_id, encrypted_token, allowed_user_ids, guild_id, auto_menu_channel_id
                     )
@@ -2346,12 +2492,22 @@ class FishingMacroGUI:
                     if not bot:
                         return None
                     
+                    # Try cache first, then fetch from API
                     guild = bot.get_guild(int(guild_id))
                     if not guild:
-                        return None
+                        try:
+                            guild = await bot.fetch_guild(int(guild_id))
+                        except Exception:
+                            return None
                     
-                    # Get all text channels
-                    text_channels = [ch for ch in guild.text_channels]
+                    # Fetch channels from API (more reliable than cache)
+                    try:
+                        channels = await guild.fetch_channels()
+                        text_channels = [ch for ch in channels if hasattr(ch, 'topic') or str(ch.type) == 'text']
+                    except Exception:
+                        # Fallback to cached channels
+                        text_channels = [ch for ch in guild.text_channels] if guild.text_channels else []
+                    
                     return guild, text_channels
 
                 # Run in bot's event loop
@@ -3848,6 +4004,7 @@ class FishingMacroGUI:
         if self.cycle_start_time is not None:
             cycle_time = time.time() - self.cycle_start_time
             self.cycle_times.append(cycle_time)
+            self.total_casts += 1  # Increment total casts (never capped)
 
             # Keep only last 20 cycles for rolling average
             if len(self.cycle_times) > 20:
@@ -3856,6 +4013,115 @@ class FishingMacroGUI:
             # Calculate average
             self.average_cycle_time = sum(self.cycle_times) / len(self.cycle_times)
             self.cycle_start_time = None
+
+            # Auto-refresh Discord menu after each cycle
+            self._trigger_discord_menu_refresh()
+
+    def _trigger_discord_menu_refresh(self):
+        """Trigger auto-refresh of Discord menu (throttled, non-blocking)"""
+        if not self._discord_menu_message or not self.bot_service or not self.bot_service.is_running():
+            return
+
+        # Throttle: min 15s between refreshes to avoid Discord API rate limits
+        now = time.time()
+        if now - self._discord_menu_last_refresh < self._discord_menu_refresh_cooldown:
+            return
+
+        self._discord_menu_last_refresh = now
+
+        try:
+            loop = self.bot_service.bot.loop
+            if loop and loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    self._auto_refresh_discord_menu(), loop
+                )
+        except Exception as e:
+            logger.debug(f"[BOT] Menu refresh trigger error: {e}")
+
+    async def _auto_refresh_discord_menu(self):
+        """
+        Auto-refresh the Discord menu embed with updated stats.
+        Only updates embed text — NO screenshot to keep it fast.
+        """
+        import discord
+
+        try:
+            if not self._discord_menu_message:
+                return
+
+            # Build fresh stats embed
+            runtime = self.get_runtime()
+            state_emoji = "🟢" if self.running else "🔴"
+            state_text = "RUNNING" if self.running else "STOPPED"
+            if self.paused:
+                state_emoji = "⏸️"
+                state_text = "PAUSED"
+
+            total_catches = self.fish_caught + self.fruits_caught
+            if self.start_time:
+                _es = time.time() - self.start_time - self.total_paused_time
+                if self.paused and self.pause_start_time:
+                    _es -= (time.time() - self.pause_start_time)
+                _es = max(0, _es)
+                elapsed_hours = _es / 3600
+                hourly_rate = (
+                    int(total_catches / elapsed_hours) if elapsed_hours > 0 else 0
+                )
+            else:
+                hourly_rate = 0
+
+            new_embed = discord.Embed(
+                title="🎣 BPS Fishing Macro — Control Panel",
+                description=f"**Status:** {state_emoji} {state_text}",
+                color=(
+                    0x00FF00
+                    if self.running and not self.paused
+                    else (0xFFAA00 if self.paused else 0xFF0000)
+                ),
+                timestamp=discord.utils.utcnow(),
+            )
+
+            new_embed.add_field(name="⏱️ Runtime", value=runtime, inline=True)
+            new_embed.add_field(name="🐟 Fish", value=str(self.fish_caught), inline=True)
+            new_embed.add_field(name="🍇 Fruits", value=str(self.fruits_caught), inline=True)
+
+            new_embed.add_field(name="📦 Total", value=str(total_catches), inline=True)
+            new_embed.add_field(name="⚡ Rate", value=f"{hourly_rate}/hr", inline=True)
+            new_embed.add_field(
+                name="🔧 Engine",
+                value=str(self.engine._state) if hasattr(self, "engine") else "N/A",
+                inline=True,
+            )
+
+            new_embed.add_field(
+                name="🎣 Casts",
+                value=str(self.total_casts),
+                inline=True,
+            )
+            new_embed.add_field(
+                name="⚡ Avg Cycle",
+                value=f"{self.average_cycle_time:.1f}s",
+                inline=True,
+            )
+
+            new_embed.set_footer(
+                text="Auto-refreshed • Click 🔄 Refresh for screenshot"
+            )
+
+            # Edit the existing menu message (no file attachment = fast)
+            await self._discord_menu_message.edit(
+                embed=new_embed,
+                view=self._discord_menu_view,
+            )
+
+        except discord.NotFound:
+            # Message was deleted — clear reference
+            self._discord_menu_message = None
+            self._discord_menu_channel_id = None
+            self._discord_menu_view = None
+            logger.debug("[BOT] Menu message was deleted, cleared reference")
+        except Exception as e:
+            logger.debug(f"[BOT] Menu auto-refresh error: {e}")
 
     # ========== CORE ENGINE CALLBACKS ==========
 
@@ -4042,6 +4308,9 @@ class FishingMacroGUI:
                 if self.paused and self.pause_start_time:
                     current_pause = current_time - self.pause_start_time
                     elapsed -= current_pause
+
+                # Safety: never go negative
+                elapsed = max(0, elapsed)
 
                 hours = int(elapsed // 3600)
                 minutes = int((elapsed % 3600) // 60)

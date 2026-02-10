@@ -3,7 +3,7 @@
 
 All notable changes to this project are documented here.
 
-## [5.2] - 2026-02-09
+## [5.3] - 2026-02-09
 
 ### Added
 - **Discord Bot Auto-Menu:** Control panel auto-sent to the configured channel on connect

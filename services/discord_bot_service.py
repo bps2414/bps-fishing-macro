@@ -1,5 +1,5 @@
 """
-Discord Bot Service (V5.2)
+Discord Bot Service (V5.3)
 
 Real Discord bot integration for remote control of the fishing macro.
 Accepts commands (!start, !stop, !status, !screenshot) from authorized users
@@ -165,6 +165,14 @@ class DiscordBotService:
                         print(f"[BOT] ⚠️ Failed to auto-send menu: {e}")
 
             @self.bot.event
+            async def on_disconnect():
+                print("[BOT] ⚠️ Disconnected from Discord")
+
+            @self.bot.event
+            async def on_resumed():
+                print("[BOT] ✅ Reconnected to Discord")
+
+            @self.bot.event
             async def on_message(message):
                 # Ignore bot's own messages
                 if message.author.bot:
@@ -177,9 +185,14 @@ class DiscordBotService:
 
                 # Check rate limit
                 if not self._check_rate_limit(message.author.id):
-                    await message.channel.send(
+                    msg = await message.channel.send(
                         f"⏳ {message.author.mention} Slow down! Wait {self._cooldown_seconds}s between commands."
                     )
+                    # Auto-delete rate limit warning after 5 seconds
+                    try:
+                        await msg.delete(delay=5.0)
+                    except Exception:
+                        pass
                     return
 
                 # Process commands
@@ -202,7 +215,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("🎣 **Starting fishing macro...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="stop", help="Stop the fishing macro")
             async def cmd_stop(ctx):
@@ -216,7 +232,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("⏹️ **Stopping fishing macro...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="status", help="📊 Get detailed macro statistics")
             async def cmd_status(ctx):
@@ -230,7 +249,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("📊 **Fetching statistics...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="help")
             async def cmd_help(ctx):
@@ -252,7 +274,8 @@ class DiscordBotService:
 
 📊 INFORMATION:
   !status      📈  Detailed stats (session + today + all-time)
-  !screenshot  📸  Capture game window screenshot
+  !screenshot  📸  Capture game window screenshot (auto-deletes 60s)
+  !eta         🍇  Estimated time until next fruit
 
 🔧 TROUBLESHOOTING:
   !debug logs      📜  Send last 50 log lines
@@ -267,7 +290,16 @@ class DiscordBotService:
 💡 TIP: All commands require authorization
 🔗 GitHub: github.com/BPS-Softworks
 ```"""
-                await ctx.send(help_msg)
+                msg = await ctx.send(help_msg)
+                # Auto-delete help after 30 seconds to keep chat clean
+                try:
+                    await msg.delete(delay=30.0)
+                except Exception:
+                    pass
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(
                 name="screenshot", help="📸 Take a screenshot of the game window"
@@ -283,7 +315,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("📸 **Taking screenshot...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="pause", help="Pause the fishing macro")
             async def cmd_pause(ctx):
@@ -297,7 +332,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("⏸️ **Pausing macro...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="resume", help="Resume the fishing macro")
             async def cmd_resume(ctx):
@@ -311,7 +349,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("▶️ **Resuming macro...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(
                 name="restart", help="🔄 Restart the macro (stop + start)"
@@ -327,7 +368,10 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("🔄 **Restarting macro...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="debug", help="🔧 Debug tools (logs/watchdog)")
             async def cmd_debug(ctx, action: str = "help"):
@@ -342,10 +386,10 @@ class DiscordBotService:
                         "action": action.lower(),
                     }
                 )
-                if action.lower() == "help":
-                    await ctx.send("🔧 **Debug options:** `logs` `watchdog` `on` `off`")
-                else:
-                    await ctx.send(f"🔧 **Processing debug command:** {action}")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
             @self.bot.command(name="menu", help="🎮 Interactive control panel")
             async def cmd_menu(ctx):
@@ -359,10 +403,30 @@ class DiscordBotService:
                         "author_name": str(ctx.author),
                     }
                 )
-                await ctx.send("🎮 **Opening control panel...**")
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
 
-            # Run bot
-            self.bot.run(self.bot_token, log_handler=None)  # Disable default logging
+            @self.bot.command(name="eta", help="🍇 Estimated time until next fruit")
+            async def cmd_eta(ctx):
+                if not await self._is_authorized(ctx):
+                    return
+                self.command_queue.put(
+                    {
+                        "command": "eta",
+                        "channel_id": ctx.channel.id,
+                        "author_id": ctx.author.id,
+                        "author_name": str(ctx.author),
+                    }
+                )
+                try:
+                    await ctx.message.delete()
+                except Exception:
+                    pass
+
+            # Run bot with auto-reconnect
+            self.bot.run(self.bot_token, log_handler=None)  # discord.py handles reconnect internally
 
         except discord.PrivilegedIntentsRequired:
             print(
@@ -404,13 +468,14 @@ class DiscordBotService:
         self._cooldowns[user_id] = current_time
         return True
 
-    async def send_message(self, channel_id: int, text: str):
+    async def send_message(self, channel_id: int, text: str, delete_after: float = None):
         """
         Send message to Discord channel.
 
         Args:
             channel_id: Discord channel ID
             text: Message text
+            delete_after: Seconds after which to auto-delete the message (None = never)
         """
         if not self.bot or not self._running:
             return
@@ -418,11 +483,13 @@ class DiscordBotService:
         try:
             channel = self.bot.get_channel(channel_id)
             if channel:
-                await channel.send(text)
+                msg = await channel.send(text)
+                if delete_after and msg:
+                    await msg.delete(delay=delete_after)
         except Exception:
             pass
 
-    async def send_file(self, channel_id: int, file_path: str, caption: str = ""):
+    async def send_file(self, channel_id: int, file_path: str, caption: str = "", delete_after: float = None):
         """
         Send file to Discord channel.
 
@@ -430,6 +497,7 @@ class DiscordBotService:
             channel_id: Discord channel ID
             file_path: Path to file
             caption: Optional caption text
+            delete_after: Seconds after which to auto-delete the message (None = never)
         """
         if not self.bot or not self._running:
             return
@@ -438,9 +506,33 @@ class DiscordBotService:
             channel = self.bot.get_channel(channel_id)
             if channel:
                 file_obj = discord.File(file_path)
-                await channel.send(content=caption if caption else None, file=file_obj)
+                msg = await channel.send(content=caption if caption else None, file=file_obj)
+                if delete_after and msg:
+                    await msg.delete(delay=delete_after)
         except Exception:
             pass
+
+    async def purge_bot_messages(self, channel_id: int, limit: int = 50):
+        """
+        Purge bot's own messages from a channel.
+
+        Args:
+            channel_id: Discord channel ID
+            limit: Max number of messages to scan
+        """
+        if not self.bot or not self._running:
+            return
+
+        try:
+            channel = self.bot.get_channel(channel_id)
+            if channel:
+                def is_bot_msg(msg):
+                    return msg.author == self.bot.user
+
+                deleted = await channel.purge(limit=limit, check=is_bot_msg)
+                print(f"[BOT] Purged {len(deleted)} bot messages from channel {channel_id}")
+        except Exception as e:
+            print(f"[BOT] Purge error: {e}")
 
     def add_allowed_user(self, user_id: int):
         """Add user to allowed list (runtime update)"""

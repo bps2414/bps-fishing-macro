@@ -1,5 +1,5 @@
 """
-Discord Settings Tab (V5.2)
+Discord Settings Tab (V5.3)
 
 Unified Discord settings tab for:
 - Rich Presence (status display)

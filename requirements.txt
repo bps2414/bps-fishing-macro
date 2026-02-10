@@ -1,4 +1,4 @@
-# BPS Fishing Macro V5.2 - Python Dependencies
+# BPS Fishing Macro V5.3 - Python Dependencies
 # Base dependencies (V5.1)
 
 customtkinter>=5.2.0
@@ -11,9 +11,9 @@ pyautogui>=0.9.54
 pydirectinput>=1.0.4
 requests>=2.31.0
 
-# V5.2 Token Encryption (Phase 5: Implemented)
+# V5.3 Token Encryption (Phase 5: Implemented)
 cryptography>=41.0.0      # Fernet fallback if DPAPI unavailable
 
-# V5.2 Discord Features (Phase 4-5)
+# V5.3 Discord Features (Phase 4-5)
 # discord.py>=2.3.2        # Discord bot for remote control (NOT IMPLEMENTED)
 pypresence>=4.3.0          # Discord Rich Presence (IMPLEMENTED)

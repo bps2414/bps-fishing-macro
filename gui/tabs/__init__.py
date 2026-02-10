@@ -17,7 +17,7 @@ from gui.tabs import (
     advanced_tab,
     stats_tab,
     logging_tab,
-    discord_bot_tab,  # V5.2: Discord Bot Remote Control
+    discord_bot_tab,  # V5.3: Discord Bot Remote Control
 )
 
 __all__ = [

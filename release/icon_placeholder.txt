@@ -1,5 +1,5 @@
 # Icon Placeholder
-# V5.2 Phase 1
+# V5.3 Phase 1
 
 This is a placeholder for the actual icon.ico file.
 

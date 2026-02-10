@@ -1,7 +1,7 @@
 # Copyright (C) 2026 BPS
 # This file is part of BPS Fishing Macro.
 #
-# V5.2: Discord Rich Presence Service
+# V5.3: Discord Rich Presence Service
 # Phase 4: Full Implementation
 
 """
