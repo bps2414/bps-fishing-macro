@@ -1,7 +1,7 @@
 # Copyright (C) 2026 BPS
 # This file is part of BPS Fishing Macro.
 #
-# V5: Services Module - Public Interface
+# v2.0.0: Services Module - Public Interface
 # Pure extraction from main file - NO behavior changes
 
 from .webhook_service import WebhookService

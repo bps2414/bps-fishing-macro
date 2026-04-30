@@ -1,0 +1,49 @@
+{
+  "always_on_top": true,
+  "discord_rpc_settings": {
+    "enabled": false
+  },
+  "area_coords": {
+    "x": 1100,
+    "y": 180,
+    "width": 500,
+    "height": 750
+  },
+  "water_point": null,
+  "item_hotkeys": {
+    "rod": "1",
+    "everything_else": "2",
+    "fruit": "3"
+  },
+  "webhook_settings": {
+    "webhook_url": "",
+    "user_id": "",
+    "only_legendary": true,
+    "pity_zone": null
+  },
+  "discord_bot_settings": {
+    "enabled": false,
+    "application_id": "",
+    "bot_token": "",
+    "allowed_user_ids": [],
+    "guild_id": "",
+    "auto_menu_channel_id": ""
+  },
+  "auto_setup_settings": {
+    "enabled": false,
+    "vip_code": "",
+    "max_retries": 5,
+    "game_open_timeout": 30,
+    "game_load_timeout": 60
+  },
+  "smart_bait_settings": {
+    "enabled": false,
+    "mode": "stockpile",
+    "legendary_target": 50,
+    "ocr_timeout_ms": 1500,
+    "ocr_confidence_min": 0.4,
+    "fallback_bait": "legendary",
+    "debug_screenshots": false,
+    "use_ocr": false
+  }
+}

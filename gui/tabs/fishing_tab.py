@@ -19,7 +19,7 @@ def build(app, parent):
         fishing_delay_frame,
         text="⏱️ FISHING END DELAY",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     fishing_delay_title.pack(pady=(10, 10))
 
@@ -65,7 +65,7 @@ def build(app, parent):
         pid_frame,
         text="🎮 PD CONTROLLER",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     pid_title.pack(pady=(10, 10))
 

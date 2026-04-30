@@ -22,7 +22,7 @@ def build(app, parent):
         webhook_url_frame,
         text="🔔 DISCORD WEBHOOK",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     webhook_title.pack(pady=(10, 10))
 
@@ -49,7 +49,7 @@ def build(app, parent):
         user_id_frame,
         text="👤 USER ID",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     user_id_title.pack(pady=(10, 10))
 
@@ -73,7 +73,7 @@ def build(app, parent):
         legendary_filter_frame,
         text="⭐ LEGENDARY/MYTHICAL FILTER",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     legendary_filter_title.pack(pady=(10, 10))
 

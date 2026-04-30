@@ -57,7 +57,7 @@ def build(app, parent):
         controls_frame,
         text="📋 LIVE LOG VIEWER",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     ).pack(pady=(10, 5))
 
     # Control buttons row

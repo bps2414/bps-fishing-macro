@@ -31,7 +31,7 @@ Design Principles:
     - Clean shutdown guarantees
     - Future-proof for headless/remote control
 
-Version: V5
+Version: 2.0.0
 Author: BPS
 """
 

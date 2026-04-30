@@ -20,7 +20,7 @@ def build(app, parent, ensure_ocr_dependencies):
         auto_craft_enable_frame,
         text="⚒️ AUTO CRAFT SETTINGS",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     auto_craft_title.pack(pady=(10, 10))
 
@@ -52,7 +52,7 @@ def build(app, parent, ensure_ocr_dependencies):
         auto_craft_area_frame,
         text="🎯 MINIGAME AREA SELECTOR",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     auto_craft_area_title.pack(pady=(10, 10))
 
@@ -129,7 +129,7 @@ def build(app, parent, ensure_ocr_dependencies):
         craft_settings_frame,
         text="⚙️ CRAFT CONFIGURATION",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     craft_settings_title.pack(pady=(10, 10))
 
@@ -276,7 +276,7 @@ def build(app, parent, ensure_ocr_dependencies):
         craft_coords_frame,
         text="📍 CRAFT COORDINATES",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     craft_coords_title.pack(pady=(10, 10))
 
@@ -350,7 +350,7 @@ def build(app, parent, ensure_ocr_dependencies):
         bait_selection_frame,
         text="🎣 2ND BAIT SELECTION (SMART BAIT)",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     ).pack(pady=(10, 5))
 
     ctk.CTkLabel(
@@ -415,7 +415,7 @@ def _build_smart_bait_section(app, parent, ensure_ocr_dependencies):
         smart_bait_frame,
         text="🧠 SMART BAIT (OCR)",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     smart_bait_title.pack(pady=(10, 5))
 

@@ -1,5 +1,5 @@
 """
-Discord Settings Tab (V5.3)
+Discord Settings Tab (v2.0.0)
 
 Unified Discord settings tab for:
 - Rich Presence (status display)
@@ -32,7 +32,7 @@ def create_discord_bot_tab(parent: ctk.CTkFrame, app):
         rpc_frame,
         text="📊 Rich Presence (Status Display)",
         font=("Segoe UI", 16, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     rpc_header.pack(fill="x", padx=15, pady=(15, 5))
 
@@ -77,7 +77,7 @@ def create_discord_bot_tab(parent: ctk.CTkFrame, app):
         bot_frame,
         text="🤖 Discord Bot (Remote Control)",
         font=("Segoe UI", 16, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     bot_header.pack(fill="x", padx=15, pady=(15, 5))
 
@@ -93,7 +93,12 @@ def create_discord_bot_tab(parent: ctk.CTkFrame, app):
     bot_switch_frame = ctk.CTkFrame(bot_frame, fg_color="transparent")
     bot_switch_frame.pack(fill="x", padx=15, pady=(0, 15))
 
-    app.discord_bot_enabled_var = ctk.BooleanVar(value=app.discord_bot_enabled)
+    # Get actual bot state (if bot service is running, it's truly enabled)
+    actual_enabled_state = app.discord_bot_enabled
+    if hasattr(app, "bot_service") and app.bot_service and app.bot_service.is_running():
+        actual_enabled_state = True
+
+    app.discord_bot_enabled_var = ctk.BooleanVar(value=actual_enabled_state)
 
     bot_switch = ctk.CTkSwitch(
         bot_switch_frame,
@@ -104,11 +109,22 @@ def create_discord_bot_tab(parent: ctk.CTkFrame, app):
     )
     bot_switch.pack(side="left")
 
+    # Determine actual bot status
+    if hasattr(app, "bot_service") and app.bot_service and app.bot_service.is_running():
+        status_text = "🟢 Online"
+        status_color = "#00dd00"
+    elif actual_enabled_state:
+        status_text = "⏳ Starting..."
+        status_color = "#ffaa00"
+    else:
+        status_text = "🔴 Offline"
+        status_color = "#ff4444"
+
     app.bot_status_label = ctk.CTkLabel(
         bot_switch_frame,
-        text="🔴 Offline",
+        text=status_text,
         font=("Segoe UI", 11),
-        text_color="#ff4444",
+        text_color=status_color,
     )
     app.bot_status_label.pack(side="right", padx=10)
 
@@ -178,7 +194,7 @@ def create_discord_bot_tab(parent: ctk.CTkFrame, app):
         text="🎯 Auto-Menu Configuration (Optional):",
         font=("Segoe UI", 13, "bold"),
         anchor="w",
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     auto_menu_label.pack(fill="x", padx=15, pady=(15, 5))
 

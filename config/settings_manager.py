@@ -470,7 +470,7 @@ class SettingsManager:
             self._save_all()
 
     def load_discord_rpc_settings(self):
-        """V5.3: Load Discord Rich Presence settings from settings file"""
+        """v2.0.0: Load Discord Rich Presence settings from settings file"""
         default_rpc = {
             "enabled": False,
         }
@@ -478,7 +478,7 @@ class SettingsManager:
             return self._data.get("discord_rpc_settings", default_rpc)
 
     def save_discord_rpc_settings(self, enabled):
-        """V5.3: Save Discord Rich Presence settings to settings file"""
+        """v2.0.0: Save Discord Rich Presence settings to settings file"""
         with self._lock:
             self._data["discord_rpc_settings"] = {
                 "enabled": enabled,
@@ -487,7 +487,7 @@ class SettingsManager:
         logger.info("Discord RPC settings saved successfully")
 
     def load_discord_bot_settings(self):
-        """V5.3: Load Discord Bot settings from settings file"""
+        """v2.0.0: Load Discord Bot settings from settings file"""
         default_bot = {
             "enabled": False,
             "application_id": "",  # Discord Application ID
@@ -508,7 +508,7 @@ class SettingsManager:
         guild_id="",
         auto_menu_channel_id="",
     ):
-        """V5.3: Save Discord Bot settings to settings file"""
+        """v2.0.0: Save Discord Bot settings to settings file"""
         with self._lock:
             self._data["discord_bot_settings"] = {
                 "enabled": enabled,
@@ -520,3 +520,54 @@ class SettingsManager:
             }
             self._save_all()
         logger.info("Discord Bot settings saved successfully")
+
+    # ========== AUTO SETUP SETTINGS ==========
+
+    def load_auto_setup_settings(self):
+        """Load auto setup settings from file"""
+        default = {
+            "enabled": False,
+            "vip_code": "",
+            "max_retries": 5,
+            "game_open_timeout": 30,
+            "game_load_timeout": 60,
+            "play_button": None,
+            "private_server_1": None,
+            "vip_code_input": None,
+            "enter_regular": None,
+            "menu_color_check": {
+                "enabled": True,
+                "coordinate": None,
+                "color_rgb": None,
+                "tolerance": 20,
+            },
+            "game_loaded_color_check": {
+                "enabled": True,
+                "coordinate": None,
+                "color_rgb": None,
+                "tolerance": 20,
+            },
+        }
+        with self._lock:
+            saved = self._data.get("auto_setup_settings", {})
+            # Merge with defaults to ensure all keys exist
+            merged = {**default, **saved}
+            # Deep merge for nested dicts (color checks)
+            if "menu_color_check" in saved:
+                merged["menu_color_check"] = {
+                    **default["menu_color_check"],
+                    **saved["menu_color_check"],
+                }
+            if "game_loaded_color_check" in saved:
+                merged["game_loaded_color_check"] = {
+                    **default["game_loaded_color_check"],
+                    **saved["game_loaded_color_check"],
+                }
+            return merged
+
+    def save_auto_setup_settings(self, settings_dict):
+        """Save auto setup settings to file"""
+        with self._lock:
+            self._data["auto_setup_settings"] = settings_dict
+            self._save_all()
+        logger.info("Auto Setup settings saved successfully")

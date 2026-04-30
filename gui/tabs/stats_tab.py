@@ -116,7 +116,7 @@ def build(app, parent):
         hover_color=app.hover_color,
     ).pack(side="left", padx=5)
 
-    # V3.1: Export/Import Config buttons
+    # v2.0.0: Export/Import Config buttons
     config_frame = ctk.CTkFrame(parent, fg_color="transparent")
     config_frame.pack(fill="x", pady=8, padx=5)
 

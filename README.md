@@ -1,80 +1,94 @@
-# BPS Fishing Macro — v1 (First Public Release)
+# BPS Fishing Macro
 
-**Release Date:** February 9, 2026  
-**Platform:** Windows 10/11 (x64)
+> Legacy Windows automation project for a Roblox fishing loop. This was my first larger personal project, kept public as a record of learning, refactoring, and shipping a working tool from a messy codebase.
 
----
+## Project Status
 
-## ✅ What this macro does
+This repository is intentionally honest about its history:
 
-BPS Fishing Macro automates the fishing loop in Roblox. It can:
+- The current official codebase is `v2.0.0`, migrated from older manually copied folders such as `V3`, `V4`, `V5.x`, and `V6`.
+- The macro works around screen coordinates, image/color detection, OCR, keyboard/mouse automation, and optional Discord integrations.
+- The code still has technical debt, including a large main file and duplicated Discord/menu logic. See [docs/ROADMAP.md](docs/ROADMAP.md).
+- Personal settings, Discord webhooks, bot tokens, local databases, logs, build outputs, and generated tooling folders are intentionally ignored.
 
-- Cast, wait, catch, and repeat automatically
-- Detect and handle fruits
-- Manage bait selection (smart or simple)
-- Provide optional Discord notifications and remote control
+## What It Does
 
----
+BPS Fishing Macro automates a fishing cycle:
 
-## 🚀 Quick Start (Non‑Developers)
+- cast, wait, catch, and repeat
+- optional bait management with OCR/color detection
+- optional fruit handling and alerts
+- optional auto-craft flow
+- optional Discord webhook, Rich Presence, and remote-control bot features
+- local stats/logging for sessions
 
-1. **Download the installer** from the GitHub Release assets.
-2. **Run the installer** (default path: `C:\Program Files\BPS Fishing Macro\`).
-3. **Launch the app** from Start Menu or Desktop.
-4. **First run** creates a settings file automatically.
-5. **Configure your screen areas** in the Settings tabs.
-6. Click **Start** (or press **F2**) to begin.
+Use this at your own risk. Automation may violate game rules or platform policies. This project is shared for portfolio and learning purposes, not as a recommendation to use automation in live games.
 
----
+## Tech Stack
 
-## ✨ Core Features
+- Python 3
+- CustomTkinter/Tkinter desktop UI
+- PyInstaller/Inno Setup packaging history
+- `mss`, `numpy`, `Pillow`, `pyautogui`, `pynput`, `pydirectinput`
+- Windows-only integrations through `pywin32`
+- Discord integrations through webhooks, Rich Presence, and `discord.py`
+- External Tesseract OCR for OCR-based features
 
-- **Fully Automated Fishing** — hands‑free loop
-- **Smart Bait System** — optional OCR‑based bait detection
-- **Fruit Handling** — auto‑collect and process fruits
-- **Auto‑Craft** — craft bait automatically
-- **Sound Alerts** — configurable audio feedback
-- **Always‑On‑Top UI** — keep the control window visible
+## Repository Layout
 
----
+```txt
+.
+├─ bps_fishing_macro_v2.0.0.py   # current main entry point
+├─ automation/                   # fishing, bait, craft, fruit, setup flows
+├─ config/                       # default settings and settings persistence
+├─ core/                         # state/engine primitives
+├─ gui/                          # CustomTkinter UI tabs and widgets
+├─ input/                        # keyboard, mouse, window helpers
+├─ services/                     # logging, stats, Discord, webhook, audio
+├─ utils/                        # validation, paths, timing, token encryption
+├─ vision/                       # screen capture, color detection, OCR wrappers
+├─ tests/                        # focused unit tests
+├─ release/                      # packaging scripts and release assets
+├─ docs/                         # audit, roadmap, and portfolio notes
+├─ bpsfishmacrosettings.example.json
+├─ requirements.txt
+└─ CHANGELOG.md
+```
 
-## 🤖 Optional Discord Features
+## Running From Source
 
-All Discord features are **optional** and **off by default**.
+This is a Windows desktop macro. The source run path assumes Python is installed and available on PATH or through the Python launcher.
 
-### 1) Webhook Notifications
-- Send alerts when events happen (e.g., fruit detection)
-- Requires a Discord webhook URL
+```powershell
+py -m pip install -r requirements.txt
+py bps_fishing_macro_v2.0.0.py
+```
 
-### 2) Rich Presence
-- Shows macro status on your Discord profile
-- Requires Discord running on your PC
+On first run, the app creates `bpsfishmacrosettings.json`. That file is local-only and ignored by Git because it can contain screen coordinates, Discord webhook URLs, bot tokens, user IDs, and private server data.
 
-### 3) Remote Control Bot
-- Control the macro from a Discord server
-- Requires a Discord bot token + your user ID
-- Supports an interactive menu with buttons (Start/Stop/Pause/Resume)
+Use `bpsfishmacrosettings.example.json` as a safe reference shape only. Do not commit your real settings file.
 
----
+## Testing
 
-## 📌 Basic Disclaimer
+```powershell
+py -m pytest
+```
 
-This tool automates gameplay input. Use at your own risk.  
-You are responsible for complying with the game’s rules and Discord’s policies.  
-The author provides no warranty and is not liable for any account actions.
+Some features are hard to test automatically because they depend on Windows APIs, screen state, Roblox being open, OCR availability, and real mouse/keyboard automation.
 
----
+## Packaging Notes
 
-## 📖 Extra Documentation (Optional)
+The repository keeps packaging scripts, but large generated binaries and local runtimes should not live in Git. Portable Tesseract files, installers, `.exe` files, logs, and local databases are ignored and should be distributed through GitHub Releases or rebuilt locally.
 
-- [docs/ROADMAP.md](docs/ROADMAP.md)
-- [docs/TECHNICAL_CHECKUP.md](docs/TECHNICAL_CHECKUP.md)
-- [docs/CORRECTIONS_APPLIED.md](docs/CORRECTIONS_APPLIED.md)
-- [GITHUB_RELEASE_GUIDE.md](GITHUB_RELEASE_GUIDE.md)
-- [CHANGELOG.md](CHANGELOG.md)
+The historical installer script expects a local `release/tesseract-portable/` folder when building an installer.
 
----
+## Documentation
 
-## 📜 License
+- [docs/REPOSITORY_AUDIT.md](docs/REPOSITORY_AUDIT.md) - cleanup audit and version selection notes
+- [docs/ROADMAP.md](docs/ROADMAP.md) - honest technical-debt roadmap
+- [CHANGELOG.md](CHANGELOG.md) - release history
+- [GITHUB_RELEASE_GUIDE.md](GITHUB_RELEASE_GUIDE.md) - legacy release process notes
 
-© 2026 BPS Fishing Macro. All rights reserved.
+## License
+
+The source headers refer to GPL terms. See [LICENSE](LICENSE) for the project license statement.

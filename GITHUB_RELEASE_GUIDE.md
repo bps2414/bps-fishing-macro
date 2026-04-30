@@ -1,216 +1,120 @@
-# 🚀 GitHub Release Guide
+# GitHub Release Guide
 
-## 📋 Pre-Release Checklist
+This file documents the legacy manual release flow. The repository is already
+connected to GitHub, so do not run `git init` again.
 
-- [x] All tests passing (57/57)
-- [x] Executable build complete (98.56 MB)
-- [x] Installer compiled (123.34 MB)
-- [x] Temp files cleaned
-- [x] Defaults updated (optimized areas)
-- [x] README updated with new features
-- [ ] Git repository initialized
-- [ ] Files committed
-- [ ] Version tag created
-- [ ] GitHub release published
+## Pre-Release Checklist
 
----
+- [ ] Run tests from a clean environment.
+- [ ] Confirm `bpsfishmacrosettings.json` is not staged.
+- [ ] Confirm no webhook URLs, bot tokens, private server codes, or local IDs are staged.
+- [ ] Rebuild the executable locally.
+- [ ] Build the installer locally if publishing an installer.
+- [ ] Attach generated binaries through GitHub Releases, not Git.
 
-## 🔧 Step 1: Set Up Git Repository
+## Source Commit
 
 ```powershell
-cd F:\VSCode\fishing\V5.3
-git init
-git config user.name "Your Name"
-git config user.email "you@example.com"
-git add .
-git commit -m "Release V5.3 - Auto-Menu Discord Bot
-
-- Discord Bot auto-menu on connect
-- Guild ID + Auto-Menu Channel ID configuration
-- \"List Channels\" button to discover channel IDs
-- Whitelist protection on all buttons
-- Optimized default areas
-- 57 tests passing (100%)
-- Build: 98.56 MB exe, 123.34 MB installer"
+git status --short
+git add README.md CHANGELOG.md requirements.txt docs/ release/ .gitignore
+git add bps_fishing_macro_v2.0.0.py bps_fishing_macro_v2.0.0.spec
+git add automation config core gui input services tests utils vision
+git commit -m "chore: prepare repository for public portfolio"
+git push origin main
 ```
 
----
+Avoid `git add .` unless you have reviewed every untracked file.
 
-## 🌐 Step 2: Create GitHub Repository
-
-1. Go to https://github.com/new
-2. **Name:** `bps-fishing-macro`
-3. **Description:** "Automated fishing macro with Discord integration"
-4. **Visibility:** Private (recommended) or Public
-5. **Do NOT** initialize with README/.gitignore/license
-6. Click **Create repository**
+## Build From Source
 
 ```powershell
-git remote add origin https://github.com/YOUR_USERNAME/bps-fishing-macro.git
-git remote -v
-git branch -M main
-git push -u origin main
+py -m pip install -r requirements.txt
+pyinstaller bps_fishing_macro_v2.0.0.spec
 ```
 
----
+The installer script expects local release-only assets:
 
-## 📦 Step 3: Create Portable.zip (Optional)
+```txt
+release/tesseract-portable/
+release/audio/
+```
+
+The Tesseract folder is intentionally ignored by Git because it is a large
+third-party runtime. Keep it local or attach built artifacts to Releases.
+
+## Portable Zip
+
+Example using relative paths from the repository root:
 
 ```powershell
-New-Item -Path "F:\VSCode\fishing\V5.3\portable-build" -ItemType Directory -Force
-Copy-Item "F:\VSCode\fishing\V5.3\release\bps_fishing_macroV5.3.exe" `
-          "F:\VSCode\fishing\V5.3\portable-build\"
-Copy-Item "F:\VSCode\fishing\V5.3\release\tesseract-portable" `
-          "F:\VSCode\fishing\V5.3\portable-build\tesseract-portable" `
-          -Recurse
-Copy-Item "F:\VSCode\fishing\V5.3\release\audio" `
-          "F:\VSCode\fishing\V5.3\portable-build\audio" `
-          -Recurse -ErrorAction SilentlyContinue
+New-Item -Path ".\portable-build" -ItemType Directory -Force
+Copy-Item ".\release\bps_fishing_macro_v2.0.0.exe" ".\portable-build\"
+Copy-Item ".\release\tesseract-portable" ".\portable-build\tesseract-portable" -Recurse
+Copy-Item ".\release\audio" ".\portable-build\audio" -Recurse -ErrorAction SilentlyContinue
 
 @"
-BPS Fishing Macro V5.3 - Portable Edition
-=========================================
+BPS Fishing Macro v2.0.0 - Portable Edition
 
 Usage:
-1. Run bps_fishing_macroV5.3.exe
+1. Run bps_fishing_macro_v2.0.0.exe
 2. Configure coordinates on first run
-3. (Optional) Configure Discord Bot for remote control
+3. Optionally configure Discord features
 
-Requirements:
-- Windows 10/11 x64
-- .NET Framework 4.8+ (usually preinstalled)
+Notes:
+- Do not share your settings JSON.
+- Use at your own risk.
+"@ | Out-File ".\portable-build\README.txt" -Encoding UTF8
 
-Support:
-- GitHub: https://github.com/YOUR_USERNAME/bps-fishing-macro
-"@ | Out-File "F:\VSCode\fishing\V5.3\portable-build\README.txt" -Encoding UTF8
+Compress-Archive -Path ".\portable-build\*" `
+  -DestinationPath ".\release\BPSFishingMacro-v2.0.0-Portable.zip" `
+  -Force
 
-Compress-Archive -Path "F:\VSCode\fishing\V5.3\portable-build\*" `
-                 -DestinationPath "F:\VSCode\fishing\V5.3\release\BPSFishingMacro-v5.3-Portable.zip" `
-                 -Force
-Remove-Item "F:\VSCode\fishing\V5.3\portable-build" -Recurse -Force
+Remove-Item ".\portable-build" -Recurse -Force
 ```
 
----
-
-## 🏷️ Step 4: Create Version Tag
+## Tag And Release
 
 ```powershell
-
-
-New Features:
-- Auto-Menu: menu auto-sent on bot connect
-- Guild & Channel config via UI
-- List Channels for channel IDs
-- Whitelist protection on menu buttons
-- Optimized default areas
-
-Build Info:
-- Executable: 98.56 MB
-- Installer: 123.34 MB
-- Tests: 57/57 passing
-- Python: 3.11.9
-- PyInstaller: 6.17.0"
-
-git push origin v5.3
+git tag -a v2.0.0 -m "BPS Fishing Macro v2.0.0"
+git push origin v2.0.0
 ```
 
----
+Then create a GitHub Release from the tag and attach generated binaries.
 
-## 🎉 Step 5: Publish GitHub Release
-
-1. Go to `https://github.com/YOUR_USERNAME/bps-fishing-macro/releases`
-2. Click **Draft a new release**
-3. **Tag:** `v5.3`
-4. **Title:** `V5.3 - Auto-Menu Discord Bot`
-5. **Description:** Use the template below
-6. **Attach binaries:**
-   - `BPSFishingMacro-Setup-v5.3.exe`
-   - `BPSFishingMacro-v5.3-Portable.zip` (if created)
-7. Mark as **latest release**
-8. Click **Publish release**
-
-### Release Notes Template
+## Release Notes Template
 
 ```markdown
-## 🎯 What’s New
+## BPS Fishing Macro v2.0.0
 
-### Discord Bot Auto-Menu
-- **Auto-Menu:** Control panel sent automatically on bot connect
-- **Channel Discovery:** “List Channels” shows all server channels with IDs
-- **Simple Config:** Guild ID + Auto-Menu Channel ID in UI
-- **Private Channel Support:** Works with restricted channels (e.g., #gpo-bot)
-- **Security:** Whitelist on all menu buttons
+### Summary
+- Semantic-version consolidation of the latest macro codebase.
+- Windows desktop UI for fishing automation.
+- Optional OCR/color-based bait detection.
+- Optional Discord webhook, Rich Presence, and bot remote control.
 
-## 📥 Downloads
+### Downloads
+| File | Description |
+| --- | --- |
+| `BPSFishingMacro-Setup-v2.0.0.exe` | Installer build |
+| `BPSFishingMacro-v2.0.0-Portable.zip` | Portable build |
 
-| File | Size | Description |
-|------|------|-------------|
-| `BPSFishingMacro-Setup-v5.3.exe` | 123.34 MB | Full installer (recommended) |
-| `BPSFishingMacro-v5.3-Portable.zip` | ~180 MB | Portable version |
+### Security
+- Do not publish `bpsfishmacrosettings.json`.
+- Do not publish Discord webhook URLs or bot tokens.
+- Personal settings are local-only.
 
-## 🚀 Quick Install
-
-### Installer (Recommended)
-1. Download `BPSFishingMacro-Setup-v5.3.exe`
-2. Run installer
-3. Follow setup wizard
-4. Launch from Desktop/Start Menu
-
-### Portable
-1. Download `BPSFishingMacro-v5.3-Portable.zip`
-2. Extract to any folder
-3. Run `bps_fishing_macroV5.3.exe`
-
-## 🎮 Discord Bot Setup (Optional)
-
-1. Create a bot in the Discord Developer Portal
-2. Copy Application ID + Bot Token
-3. Enable **Message Content Intent**
-4. Configure in the macro under **Discord Bot** tab
-5. Set Guild ID + Auto-Menu Channel ID
-6. Save settings and restart the macro
-
-## 📊 Technical
-- Windows 10/11 x64
-- Python 3.11.9
-- PyInstaller 6.17.0
-- Tests: 57/57 passing
+### Disclaimer
+This tool automates gameplay input. Use at your own risk and follow the rules
+of any game/platform where it is used.
 ```
 
----
+## Never Commit
 
-## 🔐 Security Notes
-
-### Do NOT commit:
-- `bpsfishmacrosettings.json` (personal tokens/IDs)
+- `bpsfishmacrosettings.json`
 - Discord bot tokens
-- Personal webhook URLs
-- Private user IDs
-
-### Safe to commit:
-- Source code
-- Optimized defaults (no personal data)
-- Public Discord Application ID
-- Documentation
-- Build scripts
-
----
-
-## ✅ Final Checklist
-
-- [ ] Commit code
-- [ ] Push to GitHub
-- [ ] Create tag v5.3
-- [ ] Build installer
-- [ ] Create portable zip (optional)
-- [ ] Publish GitHub release
-
----
-
-## 🎊 Done!
-
-Your latest release will be available at:
-```
-https://github.com/YOUR_USERNAME/bps-fishing-macro/releases/latest
-```
-
+- Discord webhook URLs
+- private server codes
+- local `.db` files
+- logs/debug screenshots
+- `build/`, `dist/`, generated installers, or generated executables
+- portable third-party runtime folders such as `release/tesseract-portable/`

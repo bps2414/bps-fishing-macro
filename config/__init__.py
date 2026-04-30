@@ -1,4 +1,4 @@
-# Config module for BPS Fishing Macro V5
+# Config module for BPS Fishing Macro v2.0.0
 # Zero-behavior-change extraction from V4
 
 from .settings_manager import SettingsManager

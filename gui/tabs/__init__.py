@@ -17,7 +17,8 @@ from gui.tabs import (
     advanced_tab,
     stats_tab,
     logging_tab,
-    discord_bot_tab,  # V5.3: Discord Bot Remote Control
+    discord_bot_tab,  # v2.0.0: Discord Bot Remote Control
+    auto_setup_tab,  # v2.0.0: Auto Setup (game entry automation)
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "stats_tab",
     "logging_tab",
     "discord_bot_tab",
+    "auto_setup_tab",
 ]

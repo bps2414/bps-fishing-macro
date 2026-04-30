@@ -62,6 +62,32 @@ DEFAULT_FEATURE_STATES = {
     "disable_normal_camera": True,
 }
 
+# Default Auto Setup settings
+DEFAULT_AUTO_SETUP_SETTINGS = {
+    "enabled": False,
+    "vip_code": "",
+    "max_retries": 5,
+    "game_open_timeout": 30,
+    "game_load_timeout": 60,
+    "play_button": None,
+    "private_server_1": None,
+    "vip_code_input": None,
+    "enter_regular": None,
+    # Color detection settings
+    "menu_color_check": {
+        "enabled": True,
+        "coordinate": None,  # {"x": int, "y": int}
+        "color_rgb": None,  # (R, G, B) tuple
+        "tolerance": 20,  # Color match tolerance (0-100, lower = stricter)
+    },
+    "game_loaded_color_check": {
+        "enabled": True,
+        "coordinate": None,  # {"x": int, "y": int}
+        "color_rgb": None,  # (R, G, B) tuple
+        "tolerance": 20,  # Color match tolerance (0-100, lower = stricter)
+    },
+}
+
 # Default Discord RPC Application ID (public, can be shared)
 DEFAULT_DISCORD_APP_ID = "659816357587845140"
 

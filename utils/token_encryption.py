@@ -1,7 +1,7 @@
 # Copyright (C) 2026 BPS
 # This file is part of BPS Fishing Macro.
 #
-# V5.3: Token Encryption Utilities
+# v2.0.0: Token Encryption Utilities
 # Secure token storage using Windows DPAPI with Fernet fallback
 
 """

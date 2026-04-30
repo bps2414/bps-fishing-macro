@@ -1,10 +1,10 @@
 #define MyAppName "BPS Fishing Macro"
-#define MyAppVersion "1.0.3"
+#define MyAppVersion "2.0.0"
 #define MyAppPublisher "BPS Softworks"
 #define MyAppURL "https://github.com/BPS-Softworks"
-#define MyAppExeName "bps_fishing_macro_v1.0.3.exe"
+#define MyAppExeName "bps_fishing_macro_v2.0.0.exe"
 
-; BPS Fishing Macro V5.3 - Inno Setup Installer Script
+; BPS Fishing Macro v2.0.0 - Inno Setup Installer Script
 ; Date: 02/09/2026
 ; Distribution for clean PCs (without Python installed)
 
@@ -25,7 +25,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName=BPS Fishing Macro
 AllowNoIcons=yes
 OutputDir=Output
-OutputBaseFilename=bps_fishing_macro_v1.0.3_setup
+OutputBaseFilename=bps_fishing_macro_v2.0.0_setup
 ; SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes

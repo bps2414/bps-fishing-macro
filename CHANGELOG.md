@@ -3,6 +3,27 @@
 
 All notable changes to this project are documented here.
 
+## [2.0.1] - 2026-04-30
+
+### Changed
+- Reworked README for a portfolio/public GitHub presentation.
+- Added repository audit documentation and explicit technical-debt notes.
+- Added sanitized settings example and stronger ignore rules for local settings, generated tooling folders, logs, databases, and release runtimes.
+- Documented that portable Tesseract files are local/release artifacts, not source files.
+
+### Security
+- Confirmed real `bpsfishmacrosettings.json` is ignored because it may contain Discord webhook URLs, bot tokens, private IDs, and local coordinates.
+
+## [2.0.0] - 2026-02-10
+
+### Changed
+- **Version Migration:** Unified all version references to semantic version 2.0.0
+- Renamed main entry point to `bps_fishing_macro_v2.0.0.py`
+- Updated installer, build scripts, and all module headers
+- Moved legacy binary artifacts to `artifacts_needs_manual_update/`
+
+---
+
 ## [1.0.3] - 2026-02-10
 
 ### Added
@@ -19,7 +40,7 @@ All notable changes to this project are documented here.
 ### Added
 - **Discord Bot Auto-Menu:** Control panel auto-sent to the configured channel on connect
 - **Guild/Channel Configuration:** UI fields for Server ID and Auto-Menu Channel ID
-- **“List Channels” Button:** Lists all server text channels with IDs
+- **"List Channels" Button:** Lists all server text channels with IDs
 - **Private Channel Support:** Works with restricted channels (e.g., #gpo-bot)
 - **Optimized Defaults:** Pre-configured detection areas with tested coordinates
 

@@ -21,7 +21,7 @@ Modules:
 
 Usage:
     from automation import BaitManager, FruitHandler, CraftAutomation, FishingCycle
-    
+
     bait_mgr = BaitManager(vision, settings, callbacks)
     fruit_hdl = FruitHandler(vision, input, settings, callbacks)
     craft_auto = CraftAutomation(input, settings, callbacks)
@@ -32,11 +32,12 @@ from .bait_manager import BaitManager
 from .fruit_handler import FruitHandler
 from .craft_automation import CraftAutomation
 from .fishing_cycle import FishingCycle
+from .auto_setup import AutoSetup
 
 __all__ = [
-    'BaitManager',
-    'FruitHandler',
-    'CraftAutomation',
-    'FishingCycle'
+    "BaitManager",
+    "FruitHandler",
+    "CraftAutomation",
+    "FishingCycle",
+    "AutoSetup",
 ]
-

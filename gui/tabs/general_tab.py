@@ -92,7 +92,7 @@ def build(app, parent):
         start_row,
         text="[F1]",
         font=("Arial", 11, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
         width=60,
     )
     app.start_hotkey_label.pack(side="left", padx=5)
@@ -130,7 +130,7 @@ def build(app, parent):
         area_row,
         text="[F2]",
         font=("Arial", 11, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
         width=60,
     )
     app.area_hotkey_label.pack(side="left", padx=5)
@@ -164,7 +164,7 @@ def build(app, parent):
         exit_row,
         text="[F3]",
         font=("Arial", 11, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
         width=60,
     )
     app.exit_hotkey_label.pack(side="left", padx=5)
@@ -196,7 +196,7 @@ def build(app, parent):
         pause_row,
         text="[F4]",
         font=("Arial", 11, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
         width=60,
     )
     app.pause_hotkey_label.pack(side="left", padx=5)
@@ -217,7 +217,7 @@ def build(app, parent):
         item_frame,
         text="🎣 ITEM HOTKEYS (1-10)",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     item_title.pack(pady=(10, 15))
 
@@ -273,7 +273,7 @@ def build(app, parent):
         hud_frame,
         text="📊 HUD SETTINGS",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     hud_title.pack(pady=(10, 15))
 

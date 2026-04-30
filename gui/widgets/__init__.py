@@ -8,5 +8,6 @@ Reusable GUI widgets
 """
 
 from .tooltip import CTkToolTip
+from .collapsible_sidebar import CollapsibleSidebar
 
-__all__ = ['CTkToolTip']
+__all__ = ["CTkToolTip", "CollapsibleSidebar"]

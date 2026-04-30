@@ -35,7 +35,7 @@ def build(app, parent):
         disable_camera_frame,
         text="🎮 NORMAL MODE - CAMERA",
         font=("Arial", 13, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     disable_camera_title.pack(pady=(10, 5))
 
@@ -76,7 +76,7 @@ def build(app, parent):
         camera_frame,
         text="📷 CAMERA ROTATION DELAYS",
         font=("Arial", 13, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     camera_title.pack(pady=(10, 10))
 
@@ -191,7 +191,7 @@ def build(app, parent):
         zoom_frame,
         text="🔍 ZOOM DELAYS",
         font=("Arial", 13, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     zoom_title.pack(pady=(10, 10))
 
@@ -278,7 +278,7 @@ def build(app, parent):
         precast_delays_frame,
         text="🎣 PRE-CAST ACTION DELAYS",
         font=("Arial", 13, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     precast_title.pack(pady=(10, 10))
 
@@ -434,7 +434,7 @@ def build(app, parent):
         detection_frame,
         text="🔎 DETECTION & GENERAL DELAYS",
         font=("Arial", 13, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     detection_title.pack(pady=(10, 10))
 

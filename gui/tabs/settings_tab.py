@@ -19,7 +19,7 @@ def build(app, parent):
         sound_frame,
         text="🔔 NOTIFICATIONS",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     sound_title.pack(pady=(10, 10))
 
@@ -44,7 +44,7 @@ def build(app, parent):
         precast_frame,
         text="🎣 PRE-CAST SETTINGS",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     precast_title.pack(pady=(10, 5))
 
@@ -402,7 +402,7 @@ def build(app, parent):
         casting_frame,
         text="🎯 CASTING SETTINGS",
         font=("Arial", 14, "bold"),
-        text_color=app.accent_color,
+        text_color=app.fg_color,
     )
     casting_title.pack(pady=(10, 15))
 
