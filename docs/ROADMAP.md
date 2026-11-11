@@ -32,3 +32,7 @@ This is not a promise of future features. It is an honest technical-debt map for
 - OCR features depend on local Tesseract availability.
 - Discord bot tokens and webhook URLs must never be committed.
 - Macro use may violate game rules; the repository should remain clear about that.
+
+## Long-Term Direction
+
+Instead of continuing to refactor v2 in place, the plan is a clean rewrite. The full plan, including why v2 failed on other people's PCs and how game knowledge moves out of code, is in [REWRITE_PLAN.md](REWRITE_PLAN.md). It is planned only; no v3 code exists yet.

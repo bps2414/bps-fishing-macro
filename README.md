@@ -9,6 +9,7 @@ This repository is intentionally honest about its history:
 - The current official codebase is `v2.0.0`, migrated from older manually copied folders such as `V3`, `V4`, `V5.x`, and `V6`.
 - The macro works around screen coordinates, image/color detection, OCR, keyboard/mouse automation, and optional Discord integrations.
 - The code still has technical debt, including a large main file and duplicated Discord/menu logic. See [docs/ROADMAP.md](docs/ROADMAP.md).
+- A full rewrite (v3: Tauri + Rust + Svelte) is planned but not started. See [docs/REWRITE_PLAN.md](docs/REWRITE_PLAN.md).
 - Personal settings, Discord webhooks, bot tokens, local databases, logs, build outputs, and generated tooling folders are intentionally ignored.
 
 ## What It Does
@@ -86,6 +87,7 @@ The historical installer script expects a local `release/tesseract-portable/` fo
 
 - [docs/REPOSITORY_AUDIT.md](docs/REPOSITORY_AUDIT.md) - cleanup audit and version selection notes
 - [docs/ROADMAP.md](docs/ROADMAP.md) - honest technical-debt roadmap
+- [docs/REWRITE_PLAN.md](docs/REWRITE_PLAN.md) - planned v3 rewrite: stack, architecture, portability, game profile, phased roadmap (not started)
 - [CHANGELOG.md](CHANGELOG.md) - release history
 - [GITHUB_RELEASE_GUIDE.md](GITHUB_RELEASE_GUIDE.md) - legacy release process notes
 
